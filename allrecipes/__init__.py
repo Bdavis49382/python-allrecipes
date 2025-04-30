@@ -32,7 +32,7 @@ class AllRecipes(object):
 		soup = BeautifulSoup(html_content, 'html.parser')
 
 		search_data = []
-		articles = soup.findAll("a", {"class": "mntl-card-list-items"})
+		articles = soup.findAll("a", {"class": "mntl-card-list-card--extendable"})
 
 		articles = [a for a in articles if a["href"].startswith("https://www.allrecipes.com/recipe/")]
 
@@ -68,23 +68,29 @@ class AllRecipes(object):
 
 	@staticmethod
 	def _get_name(soup):
-		return soup.find("h1", {"id": "article-heading_2-0"}).get_text().strip(' \t\n\r')
+		return soup.find("h1", {"class": "article-heading"}).get_text().strip(' \t\n\r')
 
 	@staticmethod
 	def _get_rating(soup):
-		return float(soup.find("div", {"id": "mntl-recipe-review-bar__rating_2-0"}).get_text().strip(' \t\n\r'))
+		return float(soup.find("div", {"id": "mm-recipes-review-bar__rating_1-0"}).get_text().strip(' \t\n\r'))
 
 	@staticmethod
 	def _get_ingredients(soup):
-		return [li.get_text().strip(' \t\n\r') for li in soup.find("div", {"id": "mntl-structured-ingredients_1-0"}).find_all("li")]
+		return [li.get_text().strip(' \t\n\r') for li in soup.find("div", {"id": "mm-recipes-structured-ingredients_1-0"}).find_all("li")]
 
 	@staticmethod
 	def _get_steps(soup):
-		return [li.get_text().strip(' \t\n\r') for li in soup.find("div", {"id": "recipe__steps_1-0"}).find_all("li")]
+		return [li.get_text().strip(' \t\n\r') for li in soup.find("div", {"id": "mm-recipes-steps_1-0"}).find_all("li")]
 
 	@staticmethod
 	def _get_times_data(soup, text):
-		return soup.find("div", {"id": "recipe-details_1-0"}).find("div", text=text).parent.find("div", {"class": "mntl-recipe-details__value"}).get_text().strip(' \t\n\r')
+		labels = soup.find_all("div", {"class":"mm-recipes-details__label"})
+		values = soup.find_all("div", {"class":"mm-recipes-details__value"})
+		res = zip(labels,values)
+		data = {}
+		for i in res:
+			data[i[0].text] = i[1].text
+		return data[text]
 
 	@classmethod
 	def _get_prep_time(cls, soup):
